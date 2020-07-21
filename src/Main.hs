@@ -1,14 +1,25 @@
 module Main where
 
-import ArgParser (parseArgs, Command(..))
-import Database (insertEvent, listEvents)
+import Data.List
+import Data.Time.Clock
+import Data.Time.Calendar
+import Control.Monad.Reader
+import Text.PrettyPrint.Boxes
 
-executeCommand :: Command -> IO ()
-executeCommand (Add a) = insertEvent a
-executeCommand List    = print =<< listEvents
+import ArgParser (parseArgs, Command(..))
+import Database (insertEvent, listEvents, Event(..))
+import PrettyPrinter
 
 main :: IO ()
 main = do
   arguments <- parseArgs
-  executeCommand arguments
+  let reader = executeCommand arguments
+  now <- getCurrentTime
+  runReaderT reader $ utctDay now
 
+executeCommand :: Command -> ReaderT Day IO ()
+executeCommand (Add a) = liftIO $ insertEvent a
+executeCommand List     = do
+  events <- liftIO listEvents
+  table <- createTable events
+  liftIO $ printBox table
