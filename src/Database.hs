@@ -9,7 +9,6 @@ import System.Directory (doesFileExist)
 
 import qualified ArgParser as A
 
-
 data Event = Event 
   { index :: Int
   , title :: String
@@ -19,13 +18,11 @@ data Event = Event
 instance FromRow Event where
     fromRow = Event <$> field <*> field <*> field
 
-
 dbConnection :: IO Connection
 dbConnection = do 
   conn <- open "events.db"
   execute_ conn "CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY, title TEXT, date TEXT)"
   return conn
-
 
 insertEvent :: A.AddOptionsProps -> IO ()
 insertEvent props =
@@ -36,3 +33,8 @@ insertEvent props =
 listEvents :: IO [Event]
 listEvents =
   dbConnection >>= \conn -> query_ conn "SELECT * FROM events" :: IO [Event]
+
+
+removeEvent :: Int -> IO ()
+removeEvent index =
+  dbConnection >>= \conn -> execute conn "DELETE FROM events WHERE id = ?" (Only index)

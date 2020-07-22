@@ -7,7 +7,7 @@ import Control.Monad.Reader
 import Text.PrettyPrint.Boxes
 
 import ArgParser (parseArgs, Command(..))
-import Database (insertEvent, listEvents, Event(..))
+import Database (insertEvent, listEvents, removeEvent, Event(..))
 import PrettyPrinter
 
 main :: IO ()
@@ -23,3 +23,4 @@ executeCommand List     = do
   events <- liftIO listEvents
   table <- createTable events
   liftIO $ printBox table
+executeCommand (Remove a) = liftIO $ removeEvent a

@@ -7,6 +7,7 @@ import Data.Time
 data Command
   = Add AddOptionsProps
   | List
+  | Remove Int
   deriving Show
 
 data AddOptionsProps = AddOptionsProps
@@ -22,6 +23,10 @@ addParser = Add <$>
             (AddOptionsProps <$> strOption (long "title" <> short 't')
             <*> optional (option dayReader (long "date" <> short 'd')))
 
+removeParser :: Parser Command
+removeParser = Remove <$> option auto (long "index" <> short 'i')
+
+
 dayReader :: ReadM Day
 dayReader = eitherReader $ \arg ->
     case parseTimeM True defaultTimeLocale "%F" arg of
@@ -30,9 +35,9 @@ dayReader = eitherReader $ \arg ->
 
 commands :: Parser Command
 commands =
-    subparser (command "add" (info addParser (progDesc "Add item"))) <|>
-    subparser (command "list" (info listParser (progDesc "List all items"))) <|>
-    subparser (command "remove" undefined)
+    subparser (command "add" (info addParser (progDesc "Add event"))) <|>
+    subparser (command "list" (info listParser (progDesc "List all events"))) <|>
+    subparser (command "remove" (info removeParser (progDesc "Remove event by")))
 
 parseArgs :: IO Command
 parseArgs = execParser (info commands idm)
